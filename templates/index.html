@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4CAF50, #2196F3);
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            width: 50%;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .file-label {
+            background: white;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        #file {
+            display: none;
+        }
+
+        #file-name {
+            font-size: 14px;
+        }
+
+        .predict-btn {
+            background: #ff9800;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .predict-btn:hover {
+            background: #e68900;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 10px;
+            font-size: 18px;
+            color: yellow;
+            font-weight: bold;
+        }
+
+        .prediction-box {
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .disease-info {
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 16px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #preview {
+            max-width: 100%;
+            margin-top: 20px;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .prevention-img {
+            max-width: 300px;
+            margin-top: 10px;
+            border-radius: 10px;
+            display: block;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🌿 Crop Disease Detection 🌿</h2>
+        <p>Upload a leaf image to detect disease.</p>
+
+        <form id="upload-form" action="/" method="POST" enctype="multipart/form-data">
+            <div class="file-input">
+                <label for="file" class="file-label">📂 Choose File</label>
+                <input type="file" name="file" id="file" required onchange="updateFileName()">
+                <p id="file-name">No file chosen</p>
+            </div>
+
+            <button type="submit" class="predict-btn">🔍 Predict</button>
+        </form>
+
+        <p class="loading" id="loading">⏳ Processing... Please wait</p>
+
+        {% if prediction and image_path %}
+            <div class="prediction-box">
+                <h3>🌱 Prediction: {{ prediction }}</h3>
+            </div>
+            <br>
+            <img id="preview" src="{{ url_for('static', filename=image_path) }}" alt="Uploaded Image" width="200">
+            
+            {% if disease_info %}
+                <div class="disease-info">
+                    <h3>🦠 About {{ prediction }}</h3>
+                    <p><strong>What is it?</strong> {{ disease_info.get('description', 'No description available') }}</p>
+                    <p><strong>Symptoms:</strong> {{ disease_info.get('symptoms', 'No symptoms data available') }}</p>
+                    <p><strong>Prevention:</strong> {{ disease_info.get('prevention', 'No prevention tips available') }}</p>
+
+                    {% if disease_info.get('image') %}
+                        <h4>🛡️ Prevention Guide:</h4>
+                        <img class="prevention-img" src="{{ url_for('static', filename=disease_info['image']) }}" alt="Prevention Image">
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <script>
+        function updateFileName() {
+            let input = document.getElementById('file');
+            let fileName = input.files.length > 0 ? input.files[0].name : "No file chosen";
+            document.getElementById('file-name').innerText = fileName;
+
+            // Display image preview
+            let preview = document.getElementById('preview');
+            let file = input.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = "block";
+            }
+            reader.readAsDataURL(file);
+        }
+
+        document.getElementById("upload-form").addEventListener("submit", function() {
+            document.getElementById("loading").style.display = "block";
+        });
+    </script>
+
+</body>
+</html>
